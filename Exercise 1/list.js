@@ -1,7 +1,5 @@
 "use strict";
 
-// ISBN-10 o ISBN-13 con guiones
-const ISBN_REGEX = /^(97(8|9))?\d{1,5}-\d{1,7}-\d{1,7}-[\dX]$/;
 const MAX_ELEMENT_LIST = 4;
 
 function create() {
@@ -25,13 +23,10 @@ function isValidBookFormat(elem) {
 }
 
 function addBook(list, elem) {
-    // Check the book element have a good ISBN
- //   if (!isValidBookFormat(elem)) throw "The element ISBN isn't valid";
     if (!elem.title || !elem.ISBN) throw "The element isn't a valid book";
-
-    // Check the list isn't full
     if (isFull(list)) throw "The list is full";
-    else list.push(elem);
+    
+    list.push(elem); // add elem on the list
 
     // Save the list in the sizeList
     return sizeList(list);
@@ -47,7 +42,8 @@ function addBookAt(list, elem, index) {
 }
 
 function get(list, index) {
-    //TODO
+    if (index < 0 || index > list.length) throw "Index is out of bounds";
+    return list[index]
 }
 
 // Return elements with "-"
@@ -61,14 +57,28 @@ function toString(list) {
 // Element doesn't exists -> return -1
 // Check ISBN
 function indexOf(list, elem) {
-    // TODO: - check books?
+    if (!elem.title || !elem.ISBN) throw "The element isn't a valid book";
+
+    for (let i = 0; i < list.length; i++) {
+        if (list[i].ISBN === elem.ISBN) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 // Return last element position starting with the endend
 // Element doesn't exists -> return -1
 // Check ISBN
 function lastIndexOf(list, elem) {
- // TODO
+    if (!elem.title || !elem.ISBN) throw "The element isn't a valid book";
+
+    for (let i = list.lenght; i >= 0; i--) {
+        if (list[i].ISBN === elem.ISBN) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 function capacity() {
@@ -93,7 +103,7 @@ function lastElement(list) {
 // Return element removed
 function remove(list, index) {
     if (index < 0 || index > list.length) throw "Index is out of bounds";
-    // TODO
+    return list.splice(index, 1)[0].ISBN;
 }
 
 // Remove element in the list
@@ -101,14 +111,24 @@ function remove(list, index) {
 // Return false -> not removed
 function removeElement(list, elem) {
     if (!elem.title || !elem.ISBN) throw "The element isn't a valid book";
-    // TODO
+    try {
+        list.splice(index, 1);
+        return true; 
+    } catch(error) {
+        console.error("Error removing element: " + error);
+        return false;
+    }
 }
 
 // Replace element to index.
 // Return the old element in the list
 function set(list, elem, index) {
+    if (index < 0 || index > list.length) throw "Index is out of bounds";
     if (!elem.title || !elem.ISBN) throw "The element isn't a valid book";
-    // TODO
+    const previousElem = list[index]; // save the old elem
+    list[index] = elem; // replace with the new elem
+
+    return previousElem; // return old elem
 }
 
 function testBook() {
