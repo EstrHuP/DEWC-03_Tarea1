@@ -1,6 +1,6 @@
 "use strict";
 
-const MAX_ELEMENT_LIST = 4;
+const MAX_ELEMENT_LIST = 3;
 
 function create() {
     return [];
@@ -22,24 +22,20 @@ function isValidBookFormat(elem) {
     return ISBN_REGEX.test(elem.ISBN);
 }
 
-function addBook(list, elem) {
+function add(list, elem) {
     if (!elem.title || !elem.ISBN) throw "The element isn't a valid book";
-
-    // Check the list isn't full
-    if (isFull(list)) throw "The list is full";
-    else list.push(elem);
-
-    // Save the list in the sizeList
-    return sizeList(list);
-}
-
-function addBookAt(list, elem, index) {
-    if (!elem.title || !elem.ISBN) throw "The element isn't a valid book";
-    if (index < 0 || index > list.length) throw "Index is out of bounds";
     if (isFull(list)) throw "The list is full";
 
-    list.splice(index, 0, elem);
-    return sizeList(list);
+    let isInserted = false;
+    for(let i = 0; i < list.length; i++) {
+        if (elem.ISBN < list[i].ISBN) {
+            list.splice(i, 0, elem); // insert index
+            isInserted = true;
+            break;
+        }
+    }
+    if (!isInserted) list.push(elem);
+    return sizeList(elem);
 }
 
 function get(list, index) {
@@ -50,7 +46,7 @@ function get(list, index) {
 // Return elements with "-"
 function toString(list) {
     return list.reduceRight(function(str, item, index) {
-        return (index !== list.length - 1) ? str + " - " + item.author : str + item.author; // order by last author to first author
+        return (index !== list.length - 1) ? str + " - " + item : str + item;
     }, "");
 }
 
@@ -61,20 +57,6 @@ function indexOf(list, elem) {
     if (!elem.title || !elem.ISBN) throw "The element isn't a valid book";
 
     for (let i = 0; i < list.length; i++) {
-        if (list[i].ISBN === elem.ISBN) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-// Return last element position starting with the endend
-// Element doesn't exists -> return -1
-// Check ISBN
-function lastIndexOf(list, elem) {
-    if (!elem.title || !elem.ISBN) throw "The element isn't a valid book";
-
-    for (let i = list.lenght; i >= 0; i--) {
         if (list[i].ISBN === elem.ISBN) {
             return i;
         }
@@ -121,17 +103,6 @@ function removeElement(list, elem) {
     }
 }
 
-// Replace element to index.
-// Return the old element in the list
-function set(list, elem, index) {
-    if (index < 0 || index > list.length) throw "Index is out of bounds";
-    if (!elem.title || !elem.ISBN) throw "The element isn't a valid book";
-    const previousElem = list[index]; // save the old elem
-    list[index] = elem; // replace with the new elem
-
-    return previousElem; // return old elem
-}
-
 function testByISBN() {
     console.log("Starting tests....")
 
@@ -143,23 +114,30 @@ function testByISBN() {
     console.log("Size list: " + sizeList(bookList));
 
     const book1 = {
-        ISBN: 978-84-9804-654-0,
+        ISBN: "999-84-9804-654-0",
         title: "El Quijote",
         author: "Miguel de Cervantes",
         publicationDate: new Date(1605, 0, 1),
         price: 20,
     }
     const book2 = {
-        ISBN: 978-84-9804-633-0,
+        ISBN: "999-11-9804-633-0",
         title: "El Quijote Retorna",
         author: "Miguel de Turbantes",
         publicationDate: new Date(1605, 0, 1),
         price: 20,
     }
+    const book3 = {
+        ISBN: "999-85-9804-677-0",
+        title: "El Quijote 3",
+        author: "Miguel de Cervantes 3",
+        publicationDate: new Date(2025, 0, 1),
+        price: 30,
+    };
 
     // Ivalid book 1 -> missing title
     const invalidBook1 = {
-        ISBN: 978-84-9804-654-0,
+        ISBN: "978-84-9804-654-0",
         author: "Estopa",
     }
      // Ivalid book 2 -> missing ISBN
@@ -168,143 +146,45 @@ function testByISBN() {
         title: "Return error",
     }
 
-    console.log("Adding book 1: " + addBook(bookList, book1));
-    console.log("Adding book 2: " + addBook(bookList, book2));
+    console.log("Adding book 3: " + add(bookList, book3));
+    console.log("Adding book 2: " + add(bookList, book2));
+    console.log("Adding book 1: " + add(bookList, book1));
+
+    // Show ordered like: book 2, book 1, book 3
+    console.log("Book list after add books: " + JSON.stringify(bookList, null, 2));
+
+    console.log("Book list with author: " + toString(bookList));
 
     try {
-        // Missing title
-        console.log("Trying add invalid book without title...");
-        addBook(bookList, invalidBook1);
-
-        // Missing ISBN
-        console.log("Trying add invalid ISBN book...");
-        addBook(bookList, invalidBook2);
-
-        // Add at: out of index
-        console.log("Trying add book at index 3....");
-        addBookAt(bookList, book2, 3)
-    } catch(error) {
-        console.log(error);
-    }
-
-    console.log("Book list with string by author: " + toString(bookList));
-
-    console.log("First element: " + firstElement(bookList));
-    console.log("Last element: " + lastElement(bookList));
-}
-
-
-/*
-
-function create() {
-    return [];
-}
-
-function capacity() {
-    return MAX_ElEMENT_STACK;
-}
-
-function isEmpty(stack) {
-    return (stack.length === 0);
-}
-
-function isFull(stack) {
-    return (stack.length === MAX_ElEMENT_STACK);
-}
-
-function size(stack) {
-    return stack.length;
-}
-
-function push(stack, elem) {
-    elem = Number.parseInt(elem);
-    if (Number.isNaN(elem)) {
-        throw "The element isn't a number.";
-    }
-    if (!isFull(stack)) {
-        stack.push(elem);
-    } else {
-        throw "The stack is full.";
-    }
-
-    return size(stack);
-}
-
-function toString(stack) {
-    return stack.reduceRight(function(str, item, index) {
-        return (index !== stack.length - 1) ? str + " - " + item : str + item;
-    }, "");
-}
-
-function firstElement(stack) {
-    if (isEmpty(stack)) throw "The stack is empty";
-    return stack[0];
-}
-
-function lastElement(stack) {
-    if (isEmpty(stack)) throw "The stack is empty";
-    return stack.length - 1;
-}
-
-function search(stack, elem) {
-    elem = Number.parseInt(elem);
-    if (Number.isNaN(elem)) {
-        throw "The element isn't a number.";
-    }
-    if (isEmpty(stack)) throw "The stack is empty";
-
-    return stack.findIndex(function (item) {
-        return item === elem;
-    });
-}
-
-function peek(stack) {
-    if (isEmpty(stack)) throw "The stack is empty";
-    return stack[stack.length - 1];
-}
-
-function pop(stack) {
-    if (isEmpty(stack)) throw "The stack is empty";
-    return stack.pop(); // Elimina el ultimo elemento de la pila
-}
-
-function clear(stack) {
-    stack.splice(0, stack.length); // Elimina todos los elementos dentro de la pila
-}
-
-function testStack() {
-    let stack = create();
-
-    console.log("Capacidad: "+ capacity());
-    console.log("Es vacio: " + isEmpty(stack));
-    console.log("Esta lleno: " + isFull(stack));
-    console.log("Tamaño: " + size(stack));
-
-    try {
-        for (let i = 0; i < MAX_ElEMENT_STACK; i++){
-            console.log("n elementos: " + push(stack, i));
-        }
-        push(stack, 999)
-    } catch(error) {
-        console.log(error)
-    }
-
-    console.log(toString(stack));
-    console.log(firstElement(stack));
-    console.log(lastElement(stack));
-
-    console.log("Posicion de elemento 3: " + search(stack, 3));
-    console.log("Posicion de elemento -3: " + search(stack, -3));
-
-    try {
-        while(true) {
-            console.log("Peek: " + peek(stack));
-            console.log("Pop: " + pop(stack));
-            console.log(toString(stack));
-        }
+        console.log("Trying to add an invalid book without title...");
+        add(bookList, invalidBook1);
     } catch (error) {
-        console.log(error);
+        console.log("Error: " + error);
     }
-} */
+
+    try {
+        console.log("Trying to add an invalid book without ISBN...");
+        add(bookList, invalidBook2);
+    } catch (error) {
+        console.log("Error: " + error);
+    }
+
+    try {
+        console.log("Trying to add a book when the list is full...");
+        const book3 = {
+            ISBN: 978-84-9804-777-7,
+            title: "El Quijote del Futuro",
+            author: "Autor Desconocido",
+            publicationDate: new Date(2025, 0, 1),
+            price: 30,
+        };
+        add(bookList, book3);
+    } catch (error) {
+        console.log("Error: " + error);
+    }
+
+    console.log("List is emtpy: " + isEmpty(bookList));
+    console.log("List is full: " + isFull(bookList));
+}
 
 window.onload = testByISBN;
